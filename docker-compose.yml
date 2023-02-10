@@ -1,0 +1,36 @@
+version: "3"
+services:
+  postgresdb:
+    image: postgres
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server_web:
+    container_name: fast_api_server
+    build: .
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+
+  web:
+    container_name: vite_react_app
+    build:
+      context: ../vite_react_sample
+    ports:
+    - "5173:5173"
+    depends_on:
+      - server_web
