@@ -1,12 +1,15 @@
-import os
 import uvicorn
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import sessionmaker, Session, declarative_base
+from auth_config import get_secret
 
-SQLALCHEMY_DATABASE_URL = os.getenv('DATABASE_ENDPOINT', '')
+data_secret = get_secret()
+
+SQLALCHEMY_DATABASE_URL = f"postgresql://{data_secret.username}:{data_secret.password}@" \
+                          f"{data_secret.host}:{data_secret.port}/{data_secret.dbname}"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True).connect()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
